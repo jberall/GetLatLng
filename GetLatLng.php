@@ -1,5 +1,5 @@
 <?php
-namespace common\components;
+namespace jberall\getlatlng;
  
 use Yii;
 use yii\base\Component;
@@ -32,8 +32,8 @@ class GetLatLng extends Component
  */
     public function getLatLngGoogle($arrAddress) {
         $curl_add = '';
-        if (isset($arrAddress['postal_code'])) $postal_code = $arrAddress['postal_code'];
-       if (isset($arrAddress['zip'])) $zip = $arrAddress['zip'];
+        $postal_code = (isset($arrAddress['postal_code'])) ? $arrAddress['postal_code'] : '';
+        $zip = (isset($arrAddress['zip'])) ? $arrAddress['zip'] : '';
        
        if (!$postal_code && !$zip) return false;
        
