@@ -11,8 +11,7 @@
         }
     ],
     "require": {
-        "yiisoft/yii2": "*",
-        "wenbin1989/yii2-curl": "*"
+        "yiisoft/yii2": "*"
     },
     "autoload": {
         "psr-4": {

@@ -7,6 +7,11 @@ Installation
 
 The preferred way to install this extension is through [composer](http://getcomposer.org/download/).
 
+You also need to install 
+composer require wenbin1989/yii2-curl:dev-master
+or add 
+"wenbin1989/yii2-curl": "dev-master"
+
 Either run
 
 ```
