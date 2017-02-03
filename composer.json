@@ -1,8 +1,8 @@
 {
-    "name": "jberall/getlatlng",
-    "description": "Takes an address array and return an array of latitude, longitude and latlng",
+    "name": "jberall/yii2-getlatlng",
+    "description": "takes an address array and returns a latitude, longitude and latlng in an array",
     "type": "yii2-extension",
-    "keywords": ["extension"," google maps"," latitude"," longitude"],
+    "keywords": ["yii2","extension","latitude"," longitude"," google maps"," latlng"],
     "license": "MIT",
     "authors": [
         {
@@ -11,8 +11,7 @@
         }
     ],
     "require": {
-        "yiisoft/yii2": "*",
-        "wenbin1989/yii2-curl": "dev-master"
+        "yiisoft/yii2": "*"
     },
     "autoload": {
         "psr-4": {
