@@ -1,0 +1,21 @@
+{
+    "name": "jberall/getlatlng",
+    "description": "Takes an address array and return an array of latitude, longitude and latlng",
+    "type": "yii2-extension",
+    "keywords": ["extension"," google maps"," latitude"," longitude"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jonathan Berall",
+            "email": "jberall@gmail.com"
+        }
+    ],
+    "require": {
+        "yiisoft/yii2": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "jberall\\getlatlng\\": ""
+        }
+    }
+}
