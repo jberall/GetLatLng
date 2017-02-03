@@ -10,13 +10,14 @@ The preferred way to install this extension is through [composer](http://getcomp
 Either run
 
 ```
-php composer.phar require --prefer-dist jberall/getlatlng "*"
+composer require jberall/getlatlng:dev-master 
 ```
 
 or add
 
 ```
-"jberall/getlatlng": "*"
+"jberall/getlatlng": "dev-master"
+
 ```
 
 to the require section of your `composer.json` file.
@@ -28,4 +29,19 @@ Usage
 Once the extension is installed, simply use it in your code by  :
 
 ```php
-<?= \jberall\getlatlng\AutoloadExample::widget(); ?>```
+<?php 
+        $arrAdd = [
+            'address' => '3555 Farnam Street',
+            'city' => 'Omaha',
+            'province' => 'NB',
+            //or 
+//            'state' => 'NB',
+
+            'country' => 'CA',
+            'postal_code' => '68131',
+//          or 
+//          'zip' => '68131',
+        ];    
+    $arrLatLng = \jberall\getlatlng\GetLatLng::getLatLngGoogle($arrAddress); 
+    returns null or ['latitude'=>$latitude,'longitude'=>$longitude,'latlng'=>$latlng]
+?>```
