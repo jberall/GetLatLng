@@ -3,7 +3,10 @@ namespace jberall\getlatlng;
  
 use Yii;
 use yii\base\Component;
-
+/**
+ * need to check if curl works
+ * need to add google key.
+ */
 
 class GetLatLng extends Component
 {
