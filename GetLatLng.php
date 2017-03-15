@@ -3,6 +3,8 @@ namespace jberall\getlatlng;
  
 use Yii;
 use yii\base\Component;
+
+use linslin\yii2\curl;
 /**
  * need to check if curl works
  * need to add google key.
@@ -10,6 +12,8 @@ use yii\base\Component;
 
 class GetLatLng extends Component
 {
+    CONST CONNECTION_TIMEOUT = 5;
+    CONST TIMEOUT = 5;
 /**
  * Makes a curl call to 'http://maps.googleapis.com/maps/api/geocode/json'
  * with the parameter of the address
@@ -31,13 +35,22 @@ class GetLatLng extends Component
         ]; 
  * 
  * @param array $arrAddress 
+ * @param integer $connectionTimeout CURLOPT_CONNECTTIMEOUT
+ * @param integer $timeout CURLOPT_TIMEOUT
  * @return boolean | array  null | ['latitude'=>$latitude,'longitude'=>$longitude,'latlng'=>$latlng]
  */
-    public function getLatLngGoogle($arrAddress) {
+    public function getLatLngGoogle($arrAddress,$connectionTimeout = self::CONNECTION_TIMEOUT,$timeout = self::TIMEOUT) {
+        $url = 'http://maps.googleapis.com/maps/api/geocode/json';
+//        $url = 'http://www.thorall.com';
+//        $url = 'http://192.168.1.499';
+        
+        if (!is_numeric($connectionTimeout)) $connectionTimeout = self::CONNECTION_TIMEOUT;
+        if (!is_numeric($timeout)) $timeout = self::TIMEOUT;
+        
         $curl_add = '';
-        $postal_code = (isset($arrAddress['postal_code'])) ? $arrAddress['postal_code'] : '';
-        $zip = (isset($arrAddress['zip'])) ? $arrAddress['zip'] : '';
-       
+        $postal_code = $arrAddress['postal_code'] ?? '';
+        $zip = $arrAddress['zip'] ?? '';
+
        if (!$postal_code && !$zip) return false;
        
        //build the address to send to google
@@ -49,18 +62,38 @@ class GetLatLng extends Component
        if ($postal_code) $curl_add .= $postal_code .', ';
        if ($zip) $curl_add .= $zip .', ';
        
-//       echo $curl_add;
-       
+
 //       print_r($arrAddress);exit;
 
+// GET request with GET params
+
+        $curl = new curl\Curl();
         
-       $curl = new \wenbin1989\yii2\curl\Curl();
-//       $curl->connectionTimeout = 2;
-       try {
-            $result = $curl->get('http://maps.googleapis.com/maps/api/geocode/json',['address'=>$curl_add]);
-       } catch (ErrorException $e) {
-           return ;
-       }
+        $result = $curl
+                ->setGetParams(['address'=>$curl_add])
+                ->setOption(CURLOPT_CONNECTTIMEOUT, $connectionTimeout)
+                ->setOption(CURLOPT_TIMEOUT,$timeout)
+                ->get($url);
+        
+        if ($curl->errorCode !== null) {
+             // List of curl error codes here https://curl.haxx.se/libcurl/c/libcurl-errors.html
+            switch ($curl->errorCode) {
+                case 6:
+                    //host unknown example
+                    break;
+                case 7:
+                case 28:
+                    //timeout
+                    break;
+            }
+            //send email to notify.
+//            echo '<br>url: '.$url.'<br>Err Code: '.$curl->errorCode . ' err msg '.$curl->errorText.'<br>send email to notify';
+            return ;
+
+        }         
+        
+//        print_R($result);
+
        $parse = \yii\helpers\Json::decode($result);
        
        if ($parse['status'] != 'OK') return ;
