@@ -12,14 +12,15 @@ use linslin\yii2\curl;
 
 class GetLatLng extends Component
 {
-    CONST CONNECTION_TIMEOUT = 5;
-    CONST TIMEOUT = 5;
+    CONST CONNECTION_TIMEOUT = 2;
+    CONST TIMEOUT = 2;
 /**
  * Makes a curl call to 'http://maps.googleapis.com/maps/api/geocode/json'
  * with the parameter of the address
  * Pass an address array<br>
  * You should only pass 'province' or 'state' and 'postal_code' or 'zip'<br>
- * A zip or postal code is required or null will be returned.
+ * A zip or postal code and country is required or null will be returned.
+ * If no lattitude, longitude is returned it checks by postal code/zip country.
  * 
         $arrAddress = [
             'address' => '3555 Farnam Street',
@@ -47,21 +48,25 @@ class GetLatLng extends Component
         if (!is_numeric($connectionTimeout)) $connectionTimeout = self::CONNECTION_TIMEOUT;
         if (!is_numeric($timeout)) $timeout = self::TIMEOUT;
         
-        $curl_add = '';
+        //initialize
+        $curl_add = $curl_add2 = '';
+        
         $postal_code = $arrAddress['postal_code'] ?? '';
-        $zip = $arrAddress['zip'] ?? '';
-
-       if (!$postal_code && !$zip) return false;
+        if(!$postal_code) $postal_code = $arrAddress['zip'] ?? '';
+        $country = $arrAddress['country'] ?? '';
+       
+       if (!$postal_code || !$country) return false;
        
        //build the address to send to google
        if (isset($arrAddress['address'])) $curl_add .= $arrAddress['address'] .', ';
        if (isset($arrAddress['city'])) $curl_add .= $arrAddress['city'] .', ';
-       if (isset($arrAddress['province'])) $curl_add .= $arrAddress['province'] .', ';
-       if (isset($arrAddress['state'])) $curl_add .= $arrAddress['state'] .', ';
-       if (isset($arrAddress['country'])) $curl_add .= $arrAddress['country'] .', ';
-       if ($postal_code) $curl_add .= $postal_code .', ';
-       if ($zip) $curl_add .= $zip .', ';
-       
+       if (isset($arrAddress['province'])) {
+           $curl_add2 = $arrAddress['province'] .', ';
+       } elseif (isset($arrAddress['state'])) {
+           $curl_add2 = $arrAddress['state'] .', ';
+       }
+       $curl_add2 .= $country .', ';
+       $curl_add2 .= $postal_code;
 
 //       print_r($arrAddress);exit;
 
@@ -70,22 +75,22 @@ class GetLatLng extends Component
         $curl = new curl\Curl();
         
         $result = $curl
-                ->setGetParams(['address'=>$curl_add])
+                ->setGetParams(['address'=>$curl_add.$curl_add2])
                 ->setOption(CURLOPT_CONNECTTIMEOUT, $connectionTimeout)
                 ->setOption(CURLOPT_TIMEOUT,$timeout)
                 ->get($url);
         
         if ($curl->errorCode !== null) {
              // List of curl error codes here https://curl.haxx.se/libcurl/c/libcurl-errors.html
-            switch ($curl->errorCode) {
-                case 6:
-                    //host unknown example
-                    break;
-                case 7:
-                case 28:
-                    //timeout
-                    break;
-            }
+//            switch ($curl->errorCode) {
+//                case 6:
+//                    //host unknown example
+//                    break;
+//                case 7:
+//                case 28:
+//                    //timeout
+//                    break;
+//            }
             //send email to notify.
 //            echo '<br>url: '.$url.'<br>Err Code: '.$curl->errorCode . ' err msg '.$curl->errorText.'<br>send email to notify';
             return ;
@@ -96,15 +101,34 @@ class GetLatLng extends Component
 
        $parse = \yii\helpers\Json::decode($result);
        
-       if ($parse['status'] != 'OK') return ;
+       if ($parse['status'] != 'OK') {
+            
+           //try Again only $curl_add2
 
+            $result = $curl
+                ->setGetParams(['address'=>$curl_add2])
+                ->setOption(CURLOPT_CONNECTTIMEOUT, $connectionTimeout)
+                ->setOption(CURLOPT_TIMEOUT,$timeout)
+                ->get($url);
+            if ($curl->errorCode !== null) {
+                 // List of curl error codes here https://curl.haxx.se/libcurl/c/libcurl-errors.html
+                return ;             
+            } 
+            
+       }
+       
+       $parse = \yii\helpers\Json::decode($result);
+//       print_R($result);
+       if ($parse['status'] != 'OK') {
+           return ;
+       }
 //       print_R($parse);exit;
 //        echo 'status' $parse[]
        $latitude = $parse['results'][0]['geometry']['location']['lat'];
        $longitude = $parse['results'][0]['geometry']['location']['lng'];
 //        print_r ($parse['results'][0]['geometry']['location']);exit;
        $latlng =  $latitude . ','.$longitude;
-
+      
        return ['latitude'=>$latitude,'longitude'=>$longitude,'latlng'=>$latlng];
     }
 
