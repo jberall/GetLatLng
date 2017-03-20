@@ -14,7 +14,13 @@ class GetLatLng extends Component
 {
     CONST CONNECTION_TIMEOUT = 2;
     CONST TIMEOUT = 2;
+    public $google_api_key;
 /**
+ * https://developers.arcgis.com/features/geocoding/
+ * https://msdn.microsoft.com/en-us/library/ff701714.aspx
+ * 
+ * https://developers.google.com/maps/documentation/geocoding/intro#ComponentFiltering
+ * https://developers.google.com/maps/documentation/javascript/get-api-key
  * Makes a curl call to 'http://maps.googleapis.com/maps/api/geocode/json'
  * with the parameter of the address
  * Pass an address array<br>
@@ -57,25 +63,31 @@ class GetLatLng extends Component
        
        if (!$postal_code || !$country) return false;
        
-       //build the address to send to google
-       if (isset($arrAddress['address'])) $curl_add .= $arrAddress['address'] .', ';
-       if (isset($arrAddress['city'])) $curl_add .= $arrAddress['city'] .', ';
-       if (isset($arrAddress['province'])) {
-           $curl_add2 = $arrAddress['province'] .', ';
-       } elseif (isset($arrAddress['state'])) {
-           $curl_add2 = $arrAddress['state'] .', ';
+       $address = $arrAddress['address'] ?? '';
+       $city = $arrAddress['city'] ?? '';
+       $province = $arrAddress['province'] ?? '';
+       if (!$province) {
+           $province = $arrAddress['state'] ?? '';
        }
+       
+       
+       //build the address to send to google
+       if ($address) $curl_add .= $address .', ';
+       if ($city) $curl_add .= $city .', ';
+       if ($province) $curl_add2 = $province .', ';
+
        $curl_add2 .= $country .', ';
        $curl_add2 .= $postal_code;
-
+//BC, CA, H4V 2X8
 //       print_r($arrAddress);exit;
+//       die($curl_add2);
 
 // GET request with GET params
 
         $curl = new curl\Curl();
         
         $result = $curl
-                ->setGetParams(['address'=>$curl_add.$curl_add2])
+                ->setGetParams(['address'=>$curl_add2,'components'=>'country:'.$country,'components'=>'postal_code:'.$postal_code,'key'=>$this->google_api_key])
                 ->setOption(CURLOPT_CONNECTTIMEOUT, $connectionTimeout)
                 ->setOption(CURLOPT_TIMEOUT,$timeout)
                 ->get($url);
@@ -97,28 +109,10 @@ class GetLatLng extends Component
 
         }         
         
-//        print_R($result);
+//        print_R($result);exit;
 
        $parse = \yii\helpers\Json::decode($result);
-       
-       if ($parse['status'] != 'OK') {
-            
-           //try Again only $curl_add2
 
-            $result = $curl
-                ->setGetParams(['address'=>$curl_add2])
-                ->setOption(CURLOPT_CONNECTTIMEOUT, $connectionTimeout)
-                ->setOption(CURLOPT_TIMEOUT,$timeout)
-                ->get($url);
-            if ($curl->errorCode !== null) {
-                 // List of curl error codes here https://curl.haxx.se/libcurl/c/libcurl-errors.html
-                return ;             
-            } 
-            
-       }
-       
-       $parse = \yii\helpers\Json::decode($result);
-//       print_R($result);
        if ($parse['status'] != 'OK') {
            return ;
        }

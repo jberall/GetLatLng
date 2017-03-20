@@ -47,6 +47,11 @@ Once the extension is installed, simply use it in your code by  :
 //          or 
 //          'zip' => '68131',
         ];    
-    $arrLatLng = \jberall\getlatlng\GetLatLng::getLatLngGoogle($arrAddress); 
-    returns null or ['latitude'=>$latitude,'longitude'=>$longitude,'latlng'=>$latlng]
-?>```
+
+//you will need to initilize the class so we can reference the google key.
+use jberall\getlatlng\GetLatLng;
+
+    $latlng = new GetLatLng();
+    $arrLatLng = $latlng->getLatLngGoogle($this->toArray());
+    $this->latlng = $arrLatLng['latlng'] ?? null;
+?>
