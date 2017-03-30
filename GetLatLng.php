@@ -87,7 +87,7 @@ class GetLatLng extends Component
         $curl = new curl\Curl();
         
         $result = $curl
-                ->setGetParams(['address'=>$curl_add2,'components'=>'country:'.$country,'components'=>'postal_code:'.$postal_code,'key'=>$this->google_api_key])
+                ->setGetParams(['address'=>$curl_add2,'country'=>$country,'postal_code'=>$postal_code,'key'=>$this->google_api_key])
                 ->setOption(CURLOPT_CONNECTTIMEOUT, $connectionTimeout)
                 ->setOption(CURLOPT_TIMEOUT,$timeout)
                 ->get($url);
