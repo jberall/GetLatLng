@@ -14,7 +14,7 @@ class GetLatLng extends Component
 {
     CONST CONNECTION_TIMEOUT = 2;
     CONST TIMEOUT = 2;
-    public $google_api_key;
+
 /**
  * https://developers.arcgis.com/features/geocoding/
  * https://msdn.microsoft.com/en-us/library/ff701714.aspx
@@ -42,12 +42,14 @@ class GetLatLng extends Component
         ]; 
  * 
  * @param array $arrAddress 
+ * @param string $googleApiKey  
  * @param integer $connectionTimeout CURLOPT_CONNECTTIMEOUT
  * @param integer $timeout CURLOPT_TIMEOUT
  * @return boolean | array  null | ['latitude'=>$latitude,'longitude'=>$longitude,'latlng'=>$latlng]
  */
-    public function getLatLngGoogle($arrAddress,$connectionTimeout = self::CONNECTION_TIMEOUT,$timeout = self::TIMEOUT) {
-        $url = 'http://maps.googleapis.com/maps/api/geocode/json';
+    public function getLatLngGoogle($arrAddress,$googleApiKey=null,$connectionTimeout = self::CONNECTION_TIMEOUT,$timeout = self::TIMEOUT) {
+        
+        $url = 'https://maps.googleapis.com/maps/api/geocode/json';
 //        $url = 'http://www.thorall.com';
 //        $url = 'http://192.168.1.499';
         
@@ -87,11 +89,12 @@ class GetLatLng extends Component
         $curl = new curl\Curl();
         
         $result = $curl
-                ->setGetParams(['address'=>$curl_add2,'country'=>$country,'postal_code'=>$postal_code,'key'=>$this->google_api_key])
+                ->setGetParams(['address'=>$curl_add2,'country'=>$country,'postal_code'=>$postal_code,'key'=>$googleApiKey])
                 ->setOption(CURLOPT_CONNECTTIMEOUT, $connectionTimeout)
                 ->setOption(CURLOPT_TIMEOUT,$timeout)
+                ->setOption(CURLOPT_SSL_VERIFYPEER, true)
                 ->get($url);
-        
+//        print_R($curl);
         if ($curl->errorCode !== null) {
              // List of curl error codes here https://curl.haxx.se/libcurl/c/libcurl-errors.html
 //            switch ($curl->errorCode) {
