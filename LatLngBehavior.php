@@ -46,9 +46,7 @@ class LatLngBehavior extends \yii\base\Behavior {
         if (!$this->owner->hasProperty($this->latlng)) {
             throw new InvalidParamException(get_class($this->owner) . ' has no attribute property named "' . $this->latlng . '".');
         }
-
-        $latlng = new GetLatLng(['google_api_key'=>$this->google_api_key]);
-        $arrLatLng = $latlng->getLatLngGoogle($this->owner->toArray());
+        $latlng = GetLatLng::getLatLngGoogle($this->owner->toArray(),$this->google_api_key);
         $this->owner{$this->latlng} = $arrLatLng['latlng'] ?? null;
     }
         
